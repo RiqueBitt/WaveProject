@@ -1,0 +1,40 @@
+19
+captura: /home/runner/work/WaveProject/WaveProject/shots/01-abertura-assistente.png
+captura: /home/runner/work/WaveProject/WaveProject/shots/02-assistente-1.png
+captura: /home/runner/work/WaveProject/WaveProject/shots/03-assistente-2.png
+captura: /home/runner/work/WaveProject/WaveProject/shots/04-assistente-3.png
+captura: /home/runner/work/WaveProject/WaveProject/shots/05-assistente-4.png
+captura: /home/runner/work/WaveProject/WaveProject/shots/06-assistente-5.png
+captura: /home/runner/work/WaveProject/WaveProject/shots/07-projeto-com-audio.png
+captura: /home/runner/work/WaveProject/WaveProject/shots/08-ajustar-a-tela.png
+captura: /home/runner/work/WaveProject/WaveProject/shots/09-selecao.png
+captura: /home/runner/work/WaveProject/WaveProject/shots/10-zoom.png
+captura: /home/runner/work/WaveProject/WaveProject/shots/11-efeitos-em-tempo-real.png
+captura: /home/runner/work/WaveProject/WaveProject/shots/12-nova-faixa.png
+captura: /home/runner/work/WaveProject/WaveProject/shots/13-exportar.png
+captura: /home/runner/work/WaveProject/WaveProject/shots/14-preferencias.png
+captura: /home/runner/work/WaveProject/WaveProject/shots/15-preferencias-2.png
+captura: /home/runner/work/WaveProject/WaveProject/shots/16-importar.png
+captura: /home/runner/work/WaveProject/WaveProject/shots/17-novo-projeto.png
+total 1948
+drwxr-xr-x  2 runner runner   4096 Oct 12 04:31 .
+drwxr-xr-x 19 runner runner   4096 Oct 12 04:29 ..
+-rw-r--r--  1 runner runner  97813 Oct 12 04:30 01-abertura-assistente.png
+-rw-r--r--  1 runner runner 102343 Oct 12 04:30 02-assistente-1.png
+-rw-r--r--  1 runner runner 111314 Oct 12 04:30 03-assistente-2.png
+-rw-r--r--  1 runner runner 100145 Oct 12 04:30 04-assistente-3.png
+-rw-r--r--  1 runner runner 150277 Oct 12 04:30 05-assistente-4.png
+-rw-r--r--  1 runner runner  75363 Oct 12 04:30 06-assistente-5.png
+-rw-r--r--  1 runner runner  75363 Oct 12 04:30 07-projeto-com-audio.png
+-rw-r--r--  1 runner runner  77193 Oct 12 04:30 08-ajustar-a-tela.png
+-rw-r--r--  1 runner runner  77726 Oct 12 04:31 09-selecao.png
+-rw-r--r--  1 runner runner  75589 Oct 12 04:31 10-zoom.png
+-rw-r--r--  1 runner runner  94754 Oct 12 04:31 11-efeitos-em-tempo-real.png
+-rw-r--r--  1 runner runner 100178 Oct 12 04:31 12-nova-faixa.png
+-rw-r--r--  1 runner runner 191959 Oct 12 04:31 13-exportar.png
+-rw-r--r--  1 runner runner 100178 Oct 12 04:31 14-preferencias.png
+-rw-r--r--  1 runner runner 100405 Oct 12 04:31 15-preferencias-2.png
+-rw-r--r--  1 runner runner  94805 Oct 12 04:31 16-importar.png
+-rw-r--r--  1 runner runner  63674 Oct 12 04:31 17-novo-projeto.png
+-rw-r--r--  1 runner runner 258970 Oct 12 04:31 app.log
+-rw-r--r--  1 runner runner   1314 Oct 12 04:31 run.log
