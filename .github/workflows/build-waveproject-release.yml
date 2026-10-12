@@ -67,6 +67,27 @@ jobs:
           test -n "$APPIMAGE" || { echo "AppImage não foi gerado"; ls -la build.artifacts; exit 1; }
           mkdir -p out && cp "$APPIMAGE" out/WaveProject.AppImage && chmod +x out/WaveProject.AppImage
           du -h out/WaveProject.AppImage
+      - name: Incluir a libstdc++ do compilador no AppImage
+        # O binário é compilado com um GCC mais novo que o do sistema
+        # (precisa de GLIBCXX_3.4.32). Sem levar a libstdc++ junto, o
+        # AppImage não abre no Ubuntu 22.04 e em distribuições mais antigas.
+        run: |
+          set -e
+          source $HOME/build_tools/environment.sh || true
+          CXX_BIN=${CXX:-g++}
+          STDCXX=$($CXX_BIN -print-file-name=libstdc++.so.6); GCCS=$($CXX_BIN -print-file-name=libgcc_s.so.1)
+          echo "libstdc++: $STDCXX"; strings "$STDCXX" | grep -q GLIBCXX_3.4.32 || { echo "essa libstdc++ não tem GLIBCXX_3.4.32"; exit 1; }
+          cd out && rm -rf squashfs-root
+          ./WaveProject.AppImage --appimage-extract >/dev/null
+          LIBDIR=$(dirname "$(find squashfs-root -name 'libQt6Core.so.6*' | head -1)")
+          echo "pasta das bibliotecas: $LIBDIR"
+          cp -L "$STDCXX" "$LIBDIR/libstdc++.so.6"
+          [ -e "$GCCS" ] && cp -L "$GCCS" "$LIBDIR/libgcc_s.so.1" || true
+          wget -q https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage -O /tmp/appimagetool
+          chmod +x /tmp/appimagetool
+          rm WaveProject.AppImage
+          ARCH=x86_64 /tmp/appimagetool --appimage-extract-and-run squashfs-root WaveProject.AppImage
+          rm -rf squashfs-root && chmod +x WaveProject.AppImage && du -h WaveProject.AppImage
       - uses: actions/upload-artifact@v4
         with:
           name: waveproject-linux
