@@ -90,6 +90,7 @@ jobs:
       - name: Rodar o WaveProject e capturar telas
         run: bash .github/scripts/screenshots.sh app/WaveProject.AppImage shots
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: waveproject-screenshots
           path: shots/
