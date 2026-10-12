@@ -5,7 +5,8 @@
 #   uso: screenshots.sh <WaveProject.AppImage> <pasta-de-saída>
 set -u
 APP="$(readlink -f "$1")"
-chmod +x "$APP" 2>/dev/null  # o artefato do Actions perde o bit de execução; OUT="$(mkdir -p "$2" && readlink -f "$2")"
+OUT="$(mkdir -p "$2" && readlink -f "$2")"
+chmod +x "$APP" 2>/dev/null  # o artefato do Actions perde o bit de execução
 export DISPLAY=:99 QT_QPA_PLATFORM=xcb APPIMAGE_EXTRACT_AND_RUN=1 LANG=pt_BR.UTF-8 LC_ALL=C.UTF-8
 export XDG_CONFIG_HOME="$HOME/.wp-config" XDG_DATA_HOME="$HOME/.wp-data"
 Xvfb :99 -screen 0 1600x1000x24 -nolisten tcp >/dev/null 2>&1 &
