@@ -7,7 +7,7 @@ set -u
 APP="$(readlink -f "$1")"; OUT="$(mkdir -p "$2" && readlink -f "$2")"
 export DISPLAY=:99 QT_QPA_PLATFORM=xcb APPIMAGE_EXTRACT_AND_RUN=1 LANG=pt_BR.UTF-8 LC_ALL=C.UTF-8
 export XDG_CONFIG_HOME="$HOME/.wp-config" XDG_DATA_HOME="$HOME/.wp-data"
-Xvfb :99 -screen 0 1600x1000x24 -nolisten tcp &
+Xvfb :99 -screen 0 1600x1000x24 -nolisten tcp >/dev/null 2>&1 &
 sleep 2
 (command -v openbox >/dev/null && DISPLAY=:99 openbox >/dev/null 2>&1 &)
 sleep 2
@@ -54,3 +54,5 @@ key Escape; sleep 2
 key ctrl+n; shot novo-projeto 5
 kill $APP_PID 2>/dev/null; sleep 2
 ls -la "$OUT"
+# encerra a tela virtual e o gerenciador de janelas
+pkill openbox 2>/dev/null; pkill -f "Xvfb :99" 2>/dev/null; true
