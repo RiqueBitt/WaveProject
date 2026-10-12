@@ -1,0 +1,172 @@
+name: Build WaveProject release
+
+# Compila o WaveProject (editor de áudio do Project Club, base Audacity 4)
+# para Windows e Linux, no formato que a aba Apps do Project Club consome:
+#   - Windows: WaveProject-<versão>-win.zip  (bin/WaveProject.exe + DLLs)
+#   - Linux:   WaveProject.AppImage          (arquivo único)
+# e publica uma release vX.Y.Z neste repositório. Também gera as capturas
+# de tela reais (o app rodando no Linux, sob Xvfb) para a página do app.
+#
+# Usa os mesmos scripts de compilação do Audacity (buildscripts/ci), sem
+# Sentry e sem assinatura de código.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Versão a publicar (ex: 1.0.0) — vira a tag v1.0.0'
+        required: true
+        default: '1.0.0'
+      publish:
+        description: 'Publicar a release (desmarque para só testar a compilação)'
+        type: boolean
+        default: true
+
+env:
+  CI_DIR: buildscripts/ci
+
+jobs:
+  linux:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Configurar
+        run: |
+          cmake -DEVENT=workflow_dispatch -DBUILD_MODE=devel_build -DARTIFACT_INFO="Lin_x86_64" -P ${CI_DIR}/common/ci_configure.cmake
+      - name: ccache
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/.ccache
+          key: linux-ccache-${{ github.run_id }}
+          restore-keys: linux-ccache-
+      - name: Preparar ccache
+        run: |
+          sudo apt-get update && sudo apt-get install -y ccache
+          bash ./muse/buildscripts/ci/tools/setup_ccache_config.sh
+      - name: Instalar Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.10.1'
+          host: linux
+          target: desktop
+          arch: linux_gcc_64
+          modules: 'qt5compat qtnetworkauth qtshadertools qtwebsockets qtgraphs qtquick3d'
+          cache: true
+      - name: Preparar ambiente
+        run: bash ${CI_DIR}/linux/setup.sh
+      - name: Compilar
+        run: |
+          source $HOME/build_tools/environment.sh
+          cmake -DCRASH_REPORT_URL="''" -DAUDIOPLUGINS_CRASHREPORT_URL="''" -P ${CI_DIR}/linux/ci_build.cmake
+      - name: Empacotar AppImage
+        run: |
+          cmake -DPACKARCH=x86_64 -P ${CI_DIR}/linux/package.cmake
+          APPIMAGE=$(find build.artifacts -maxdepth 1 -name '*.AppImage' | head -1)
+          test -n "$APPIMAGE" || { echo "AppImage não foi gerado"; ls -la build.artifacts; exit 1; }
+          mkdir -p out && cp "$APPIMAGE" out/WaveProject.AppImage && chmod +x out/WaveProject.AppImage
+          du -h out/WaveProject.AppImage
+      - uses: actions/upload-artifact@v4
+        with:
+          name: waveproject-linux
+          path: out/WaveProject.AppImage
+
+  screenshots:
+    needs: linux
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: waveproject-linux
+          path: app
+      - name: Dependências para rodar e capturar
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb xdotool imagemagick x11-utils libfuse2 libxcb-cursor0 libxkbcommon-x11-0 \
+            libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-shape0 libxcb-xinerama0 \
+            libegl1 libgl1 libopengl0 pulseaudio sox fonts-noto-core fonts-noto-color-emoji
+      - name: Rodar o WaveProject e capturar telas
+        run: bash .github/scripts/screenshots.sh app/WaveProject.AppImage shots
+      - uses: actions/upload-artifact@v4
+        with:
+          name: waveproject-screenshots
+          path: shots/
+
+  windows:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 3
+      - name: Configurar
+        shell: bash
+        run: cmake -DEVENT=workflow_dispatch -DBUILD_MODE=devel_build -DARTIFACT_INFO="Win_x86_64" -P ${CI_DIR}/common/ci_configure.cmake
+      - name: ccache
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/.ccache
+          key: windows-ccache-${{ github.run_id }}
+          restore-keys: windows-ccache-
+      - name: Preparar ccache
+        shell: bash
+        run: |
+          choco install -y ccache
+          bash ./muse/buildscripts/ci/tools/setup_ccache_config.sh
+      - name: Instalar Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.10.1'
+          host: windows
+          target: desktop
+          arch: win64_msvc2022_64
+          modules: 'qt5compat qtnetworkauth qtshadertools qtwebsockets qtgraphs qtquick3d'
+          cache: true
+      - name: Preparar ambiente
+        shell: bash
+        run: cmake -P ${CI_DIR}/windows/setup.cmake
+      - name: Compilar
+        shell: bash
+        run: |
+          source /c/build_tools/environment.sh
+          cmake -DCRASH_REPORT_URL="" -DAUDIOPLUGINS_CRASHREPORT_URL="" -P ${CI_DIR}/windows/ci_build.cmake
+      - name: Empacotar .zip
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem -Path build.install -Recurse -Filter WaveProject.exe | Select-Object -First 1
+          if (-not $exe) { Get-ChildItem -Recurse build.install | Select-Object -First 50; throw "WaveProject.exe não foi gerado" }
+          Write-Host "Executável: $($exe.FullName)"
+          New-Item -ItemType Directory -Force out | Out-Null
+          Compress-Archive -Path "build.install\*" -DestinationPath "out\WaveProject-${{ inputs.version }}-win.zip"
+          Get-Item out\*.zip | Select-Object Name, Length
+      - uses: actions/upload-artifact@v4
+        with:
+          name: waveproject-windows
+          path: out/*.zip
+
+  release:
+    if: ${{ inputs.publish }}
+    needs: [linux, windows, screenshots]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+      - name: Publicar release v${{ inputs.version }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ inputs.version }}
+          name: WaveProject ${{ inputs.version }}
+          body: |
+            WaveProject ${{ inputs.version }} — editor de áudio do Project Club (baseado no Audacity 4, GNU GPL v3).
+            - Windows: WaveProject-${{ inputs.version }}-win.zip
+            - Linux: WaveProject.AppImage
+            Instale e atualize pela aba **Apps** do Project Club.
+          files: |
+            dist/waveproject-linux/WaveProject.AppImage
+            dist/waveproject-windows/*.zip
+            dist/waveproject-screenshots/*.png
