@@ -75,6 +75,7 @@ jobs:
   screenshots:
     needs: linux
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     permissions:
       contents: write
     steps:
@@ -86,7 +87,7 @@ jobs:
       - name: Dependências para rodar e capturar
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq xvfb xdotool imagemagick x11-utils libfuse2 libxcb-cursor0 libxkbcommon-x11-0 \
+          sudo apt-get install -y -qq xvfb xdotool imagemagick openbox x11-utils libfuse2 libxcb-cursor0 libxkbcommon-x11-0 \
             libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-shape0 libxcb-xinerama0 \
             libegl1 libgl1 libopengl0 pulseaudio sox fonts-noto-core fonts-noto-color-emoji
       - name: Rodar o WaveProject e capturar telas

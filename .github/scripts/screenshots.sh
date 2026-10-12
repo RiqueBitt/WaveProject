@@ -9,6 +9,8 @@ export DISPLAY=:99 QT_QPA_PLATFORM=xcb APPIMAGE_EXTRACT_AND_RUN=1 LANG=pt_BR.UTF
 export XDG_CONFIG_HOME="$HOME/.wp-config" XDG_DATA_HOME="$HOME/.wp-data"
 Xvfb :99 -screen 0 1600x1000x24 -nolisten tcp &
 sleep 2
+(command -v openbox >/dev/null && DISPLAY=:99 openbox >/dev/null 2>&1 &)
+sleep 2
 pulseaudio --start --exit-idle-time=-1 2>/dev/null || true
 pactl load-module module-null-sink sink_name=virtual 2>/dev/null || true
 
@@ -21,8 +23,8 @@ sox -n -r 44100 -c 1 voz.wav synth 12 sine 220-660 tremolo 6 60 gain -8
 
 n=0
 shot() { n=$((n+1)); local f; f=$(printf '%s/%02d-%s.png' "$OUT" "$n" "$1"); sleep "${2:-2}"; import -window root "$f"; echo "captura: $f"; }
-key() { xdotool key --clearmodifiers "$@"; }
-win() { xdotool search --onlyvisible --name "$1" 2>/dev/null | head -1; }
+key() { timeout 10 xdotool key --clearmodifiers "$@"; }
+win() { timeout 10 xdotool search --onlyvisible --name "$1" 2>/dev/null | head -1; }
 
 "$APP" musica.wav > "$OUT/app.log" 2>&1 &
 APP_PID=$!
@@ -33,7 +35,7 @@ for p in 1 2 3 4 5; do
   key Return; shot "assistente-$p" 3
 done
 key Escape; sleep 3
-W=$(win "WaveProject"); [ -n "$W" ] && xdotool windowactivate --sync "$W" windowsize "$W" 1600 1000 windowmove "$W" 0 0 2>/dev/null
+W=$(win "WaveProject"); [ -n "$W" ] && timeout 10 xdotool windowfocus "$W" windowsize "$W" 1600 1000 windowmove "$W" 0 0 2>/dev/null
 shot projeto-com-audio 4
 key ctrl+f; shot ajustar-a-tela 3
 key ctrl+a; shot selecao 3
